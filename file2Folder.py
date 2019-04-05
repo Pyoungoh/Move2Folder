@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-import os
+import os.path
 import shutil
 import sys
+from optparse import OptionParser
 
 
 def createFolder(fullPathName):
@@ -27,25 +28,51 @@ def moveToFolder(path, fileName, seperator) :
     srcFile = path + '\\' + fileName
     destFile = destPath + '\\' + fileName
     print(srcFile+ '->' + destFile)
-    #shutil.move(srcFile, destFile)
+    shutil.move(srcFile, destFile)
     return True
 
-def main(path, sep):
+def main(path, sep, ext):
     print("=== " + path + '===' )
     file_list = os.listdir(path)
     count = 0
-    for file in file_list:
-        fullFilename = os.path.join(path, file)
-        if os.path.isfile(fullFilename):
-            if moveToFolder(path, file, sep) == True :
-                count = count + 1
+
+    if ext == None :
+        for file in file_list:
+             fullFilename = os.path.join(path, file)
+             if os.path.isfile(fullFilename):
+                 if moveToFolder(path, file, sep) == True :
+                     count = count + 1
+    else:
+        ext = ext.lower()
+        for file in file_list:
+            fullFilename = os.path.join(path, file)
+            if os.path.isfile(fullFilename):
+                fname, fext = os.path.splitext(fullFilename)
+
+                if len(fext) == 0 :
+                    continue
+
+                if fext[1:].lower() == ext :
+                    if moveToFolder(path, file, sep) == True :
+                        count = count + 1
+
     print("=====" + str(count) + "files moved" + "====")
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3 :
-        print("invalid argument")
-    main(sys.argv[1], sys.argv[2])
+    option = OptionParser(usage='%prog', version='%prog 1.0')
 
+    option.add_option('-s', '--seperator', dest='sep', type='string', help='Input seperator string.')
+    option.add_option('-e', '--ext', dest='ext', type='string', help='Input file ext string.')
 
+    (options, args) = option.parse_args()
 
+    print ('option 정보 : %s' % options)
+    print ('args 정보 : %s' % args)
 
+    if (options.sep == None) :
+        options.sep = '-'
+
+    if len(args) == 1 :
+        main(args[0], options.sep, options.ext)
+    else:
+        print("Input process path")
